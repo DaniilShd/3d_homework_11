@@ -1,0 +1,87 @@
+dataset:
+  name: POSS
+  dataset_path: ./SemanticPOSS_dataset
+  cache_dir: ./logs/cache_poss
+  class_weights: [0.0, 10.0, 8.0, 6.0, 1.5, 3.0, 2.0, 4.0, 2.5, 5.0, 0.8, 4.5, 2.0, 7.0, 0.5]
+  test_result_folder: ./test_poss
+  training_split: ['00', '01', '02', '03']
+  validation_split: ['04']
+  test_split: ['05']
+  all_split: ['00', '01', '02', '03', '04', '05']
+  use_cache: true
+  sampler:
+    name: 'SemSegRandomSampler'
+
+# POSS mapping definitions
+learning_map:
+  0: 0    # unlabeled -> 0 (игнорируется)
+  4: 1    # 1 person -> 1
+  5: 2    # 2+ person -> 2  
+  6: 3    # rider -> 3
+  7: 4    # car -> 4
+  8: 5    # trunk -> 5
+  9: 6    # plants -> 6
+  10: 7   # traffic sign 1 -> 7
+  11: 7   # traffic sign 2 -> 7 (объединяем)
+  12: 7   # traffic sign 3 -> 7 (объединяем)
+  13: 8   # pole -> 8
+  14: 9   # trashcan -> 9
+  15: 10  # building -> 10
+  16: 11  # cone/stone -> 11
+  17: 12  # fence -> 12
+  21: 13  # bike -> 13
+  22: 14  # ground -> 14
+
+learning_map_inv:
+  0: 0    # unlabeled
+  1: 4    # 1 person
+  2: 5    # 2+ person
+  3: 6    # rider
+  4: 7    # car
+  5: 8    # trunk
+  6: 9    # plants
+  7: 10   # traffic sign (объединенный)
+  8: 13   # pole
+  9: 14   # trashcan
+  10: 15  # building
+  11: 16  # cone/stone
+  12: 17  # fence
+  13: 21  # bike
+  14: 22  # ground
+
+model:
+  name: RandLANet
+  batcher: DefaultBatcher
+  ckpt_path: null  
+  num_neighbors: 16         
+  num_layers: 4             
+  num_points: 45056         
+  num_classes: 15           # 14 классов + игнорируемый 0
+  ignored_label_inds: [0]  
+  sub_sampling_ratio: [4, 4, 4, 4] 
+  in_channels: 4           # для POSS: x, y, z, интенсивность
+  dim_features: 8           
+  dim_output: [16, 64, 128, 256] 
+  grid_size: 0.06           
+  augment:
+    recenter:
+      dim: [0, 1]
+
+pipeline:
+  name: SemanticSegmentation
+  optimizer:
+    lr: 0.001
+  batch_size: 2
+  num_workers: 0 
+  main_log_dir: ./logs_poss
+  max_epoch: 1
+  save_ckpt_freq: 5
+  scheduler_gamma: 0.9886
+  test_batch_size: 1
+  train_sum_dir: train_log
+  val_batch_size: 2
+  summary:
+    record_for: []
+    max_pts: []
+    use_reference: false
+    max_outputs: 1
